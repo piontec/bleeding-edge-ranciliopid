@@ -61,6 +61,7 @@ enum MACHINE {
 // TOF sensor for water level
 #define TOF 0                      // 0 = no TOF sensor connected; 1 = water level by TOF sensor
 #define TOF_I2C 0x29               // I2C address of TOF sensor; 0x29 by default
+#define TOF_USE_I2C_2 0            // use separate 2nd I2C bus configure below with I2C_SDA_2 and I2C_SCL_2
 #define CALIBRATION_MODE 0         // 1 = enable to obtain water level calibration values; 0 = disable for normal PID operation; can also be done in Blynk
 #define WATER_FULL 102             // value for full water tank (=100%) obtained in calibration procedure (in mm); can also be set in Blynk
 #define WATER_EMPTY 205            // value for empty water tank (=0%) obtained in calibration procedure (in mm); can also be set in Blynk
@@ -142,6 +143,8 @@ enum MACHINE {
 #define HXCLKPIN 99                // weight scale PIN
 #define SCREEN_WIDTH 128           // OLED display width, in pixels
 #define SCREEN_HEIGHT 64           // OLED display height, in pixels
+#define I2C_SDA_2 99               // allow to use 2nd I2C bus for elements other than screen
+#define I2C_SCL_2 99               // allow to use 2nd I2C bus for elements other than screen
 
 // Historic (no settings)
 #define TEMPSENSOR 2               // 2 = TSIC306, 1 = DS18B20

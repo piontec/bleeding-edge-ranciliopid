@@ -44,6 +44,13 @@
     hw_timer_t *timer = NULL;
 #endif
 
+#if (I2C_SDA_2 != 99 && I2C_SCL_2 != 99)
+    #include <Wire.h>
+    // TwoWire wire2;
+    TwoWire wire2 = TwoWire(1);
+    wire2.begin(I2C_SDA_2, I2C_SCL_2);
+#endif
+
 #if (BREWMODE == 2 || ONLYPIDSCALE == 1)
     #include <HX711_ADC.h>
 #endif
@@ -198,7 +205,7 @@ uint8_t pidON = 0;               // 1 = control loop in closed loop
 uint8_t usePonM = 0;             // 1 = use PonM for cold start PID, 0 = use normal PID for cold start
 int relayON, relayOFF;           // used for relay trigger type. Do not change!
 boolean coldstart = true;        // true = Rancilio started for first time
-boolean emergencyStop = false;   // Emergency stop if temperature is too high 
+boolean emergencyStop = false;   // Emergency stop if temperature is too high
 double EmergencyStopTemp = 120;  // Temp EmergencyStopTemp
 float inX = 0, inY = 0, inOld = 0, inSum = 0; // used for filter()
 int signalBars = 0;              // used for getSignalStrength()
@@ -237,7 +244,7 @@ double aggbTv = AGGBTV;
 
 double aggbKd = aggbTv * aggbKp;
 double brewtimersoftware = BREW_SW_TIMER;  // use userConfig time until disabling BD PID
-double brewsensitivity = BREWSENSITIVITY;  // user userConfig brew detection sensitivity 
+double brewsensitivity = BREWSENSITIVITY;  // user userConfig brew detection sensitivity
 
 // Brewing, 1 = Normal Preinfusion , 2 = Scale & Shottimer = 2
 #include "brewscaleini.h"
@@ -369,8 +376,8 @@ struct mqttVars_t {
 };
 
 std::vector<mqttVars_t> mqttVars = {
-    {"BrewSetPoint", tDouble, 20, 105, (void *)&BrewSetPoint},    
-    {"BrewTempOffset", tDouble, 0, 15, (void *)&BrewTempOffset},    
+    {"BrewSetPoint", tDouble, 20, 105, (void *)&BrewSetPoint},
+    {"BrewTempOffset", tDouble, 0, 15, (void *)&BrewTempOffset},
     {"brewtime", tDouble, 0, 60, (void *)&brewtime},
     {"preinfusion", tDouble, 0, 10, (void *)&preinfusion},
     {"preinfusionpause", tDouble, 0, 20, (void *)&preinfusionpause},
@@ -1686,7 +1693,7 @@ char const* machinestateEnumToString(MachineState machinestate) {
     }
 
     return "Unknown";
-} 
+}
 
 void debugVerboseOutput() {
     static PeriodicTrigger trigger(10000);
@@ -1755,7 +1762,7 @@ void wiFiSetup() {
     #if OLED_DISPLAY != 0
         displayLogo(langstring_connectwifi1, wm.getWiFiSSID(true));
     #endif
-        
+
     startRemoteSerialServer();
 }
 
@@ -1836,7 +1843,7 @@ void setup() {
     initTimer1();
 
     storageSetup();
-    
+
     editableVars =  {
         {"PID_ON", "Enable PID Controller", false, "", kUInt8, 0, []{ return true; }, (void *)&pidON},
         {"START_USE_PONM", "Enable PonM", true, F("Use PonM mode (<a href='http://brettbeauregard.com/blog/2017/06/introducing-proportional-on-measurement/' target='_blank'>details</a>) while heating up the machine. Otherwise, just use the same PID values that are used later"), kUInt8, 0, []{ return true; }, (void *)&usePonM},
@@ -1952,7 +1959,11 @@ void setup() {
 
     // VL530L0x TOF sensor
     if (TOF != 0) {
-        lox.begin(tof_i2c);  // initialize TOF sensor at I2C address
+        #if TOF_USE_I2C_2 == 0
+            lox.begin(tof_i2c);  // initialize TOF sensor at I2C address
+        #else
+            lox.begin(tof_i2c, VERBOSE, &wire2);  // initialize TOF sensor at I2C address with wire2
+        #endif
         lox.setMeasurementTimingBudgetMicroSeconds(2000000);
     }
 
@@ -2182,8 +2193,8 @@ void looppid() {
             debugPrintf("isBrewDetected %i\n", isBrewDetected);
             debugPrintf("Brewdetection %i\n", Brewdetection);
 
-    
-        }  
+
+        }
         #endif
     }
 
@@ -2246,7 +2257,7 @@ void looppid() {
 
     // Set PID if first start of machine detected, and no SteamON
     if ((machinestate == kInit || machinestate == kColdStart || machinestate == kSetPointNegative)) {
-        if (usePonM) { 
+        if (usePonM) {
             if (startTn != 0) {
                 startKi = startKp / startTn;
             } else {
