@@ -16,6 +16,8 @@ bool scaleTareSuccess = false;
 bool scaleRunning = false;
 
 float currentWeight = 0.0;  // gram
+float currentWeight1 = 0.0;  // gram
+float currentWeight2 = 0.0;  // gram
 float flowRate = 0.0;       // gram/second
 float flowRateFactor = 0.5;  //moving average factor
 unsigned long flowRateSampleTime = 0;

@@ -1361,8 +1361,7 @@ network-issues with your other WiFi-devices on your WiFi-network. */
         mqttPublish((char*)"events", debugLine);
         lastBrewReady = millis() - 60000;
       } else if (brewReady && !brewReadyCurrent) {
-        //DEBUG_print("brewReady off: %d = %0.2f, %0.2f, %0.2f, %0.2f, %0.2f = %0.2f\n", readIndex, getTemperature(0), getTemperature(1), getTemperature(2), getTemperature(3), getTemperature(4), getAverageTemperature(5));
-      }
+2f
       brewReady = brewReadyCurrent;
     }
     setHardwareLed(((brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false))) || (steaming && Input >= steamReadyTemp));
@@ -2072,8 +2071,7 @@ network-issues with your other WiFi-devices on your WiFi-network. */
       const unsigned int max_subscriptions = 30;
       const unsigned int max_retained_topics = 30;
       const unsigned int mqtt_service_port = 1883;
-      snprintf(topicSet, sizeof(topicSet), "%s%s/+/%s", mqttTopicPrefix, hostname, "set");
-      snprintf(topicActions, sizeof(topicActions), "%s%s/actions/+", mqttTopicPrefix, hostname);
+/+/%      snprintf(topicActions, sizeof(topicActions), "%s%s/actions/+", mqttTopicPrefix, hostname);
       MQTT_server_onData(mqtt_callback_2);
       if (MQTT_server_start(mqtt_service_port, max_subscriptions, max_retained_topics)) {
         if (!MQTT_local_subscribe((unsigned char*)topicSet, 0) || !MQTT_local_subscribe((unsigned char*)topicActions, 0)) {
