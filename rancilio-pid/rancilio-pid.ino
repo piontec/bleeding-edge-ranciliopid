@@ -21,7 +21,7 @@
 
 RemoteDebug Debug;
 
-const char* sysVersion PROGMEM = "3.2.1 beta4";
+const char *sysVersion PROGMEM = "3.2.1 beta4 dev";
 
 /********************************************************
  * definitions below must be changed in the userConfig.h file
@@ -35,28 +35,28 @@ const bool ota = OTA;
 const int grafana = GRAFANA;
 
 // Wifi
-const char* hostname = HOSTNAME;
-const char* ssid = D_SSID;
-const char* pass = PASS;
+const char *hostname = HOSTNAME;
+const char *ssid = D_SSID;
+const char *pass = PASS;
 
 unsigned long lastWifiConnectionAttempt = millis();
 const unsigned long wifiReconnectInterval = 60000; // try to reconnect every 60 seconds
-unsigned long wifiConnectWaitTime = 6000; // ms to wait for the connection to succeed
-unsigned int wifiReconnects = 0; // number of reconnects
+unsigned long wifiConnectWaitTime = 6000;          // ms to wait for the connection to succeed
+unsigned int wifiReconnects = 0;                   // number of reconnects
 
 // OTA
-const char* OTApass = OTAPASS;
+const char *OTApass = OTAPASS;
 
 // Blynk
-const char* blynkAddress = BLYNKADDRESS;
+const char *blynkAddress = BLYNKADDRESS;
 const int blynkPort = BLYNKPORT;
-const char* blynkAuth = BLYNKAUTH;
+const char *blynkAuth = BLYNKAUTH;
 unsigned long blynkLastReconnectAttemptTime = 0;
 unsigned int blynkReconnectAttempts = 0;
 unsigned long blynkReconnectIncrementalBackoff = 180000; // Failsafe: add 180sec to reconnect time after each
                                                          // connect-failure.
-unsigned int blynkMaxIncrementalBackoff = 5; // At most backoff <mqtt_max_incremenatl_backoff>+1 *
-                                             // (<mqttReconnectIncrementalBackoff>ms)
+unsigned int blynkMaxIncrementalBackoff = 5;             // At most backoff <mqtt_max_incremenatl_backoff>+1 *
+                                                         // (<mqttReconnectIncrementalBackoff>ms)
 
 WiFiClient espClient;
 
@@ -69,11 +69,11 @@ PubSubClient mqttClient(espClient);
 #endif
 const int MQTT_MAX_PUBLISH_SIZE = 120; // see
                                        // https://github.com/knolleary/pubsubclient/blob/master/src/PubSubClient.cpp
-const char* mqttServerIP = MQTT_SERVER_IP;
+const char *mqttServerIP = MQTT_SERVER_IP;
 const int mqttServerPort = MQTT_SERVER_PORT;
-const char* mqttUsername = MQTT_USERNAME;
-const char* mqttPassword = MQTT_PASSWORD;
-const char* mqttTopicPrefix = MQTT_TOPIC_PREFIX;
+const char *mqttUsername = MQTT_USERNAME;
+const char *mqttPassword = MQTT_PASSWORD;
+const char *mqttTopicPrefix = MQTT_TOPIC_PREFIX;
 char topicWill[256];
 char topicSet[256];
 char topicActions[256];
@@ -86,8 +86,8 @@ unsigned long mqttLastReconnectAttemptTime = 0;
 unsigned int mqttReconnectAttempts = 0;
 unsigned long mqttReconnectIncrementalBackoff = 210000; // Failsafe: add 210sec to reconnect time after each
                                                         // connect-failure.
-unsigned int mqttMaxIncrementalBackoff = 5; // At most backoff <mqtt_max_incremenatl_backoff>+1 *
-                                            // (<mqttReconnectIncrementalBackoff>ms)
+unsigned int mqttMaxIncrementalBackoff = 5;             // At most backoff <mqtt_max_incremenatl_backoff>+1 *
+                                                        // (<mqttReconnectIncrementalBackoff>ms)
 bool mqttDisabledTemporary = false;
 unsigned long mqttConnectTime = 0; // time of last successfull mqtt connection
 
@@ -98,10 +98,10 @@ int activeState = 3; // (0:= undefined / EMERGENCY_TEMP reached)
                      // 1:= Coldstart required (machine is cold)
                      // 2:= Stabilize temperature after coldstart
                      // 3:= (default) Inner Zone detected (temperature near setPoint)
-                     // 4:= Brew detected 
+                     // 4:= Brew detected
                      // 5:= Outer Zone detected (temperature outside of "inner zone")
                      // 6:= steam mode activated
-                     // 7:= sleep mode activated 
+                     // 7:= sleep mode activated
                      // 8:= clean mode
 
 /********************************************************
@@ -110,38 +110,43 @@ int activeState = 3; // (0:= undefined / EMERGENCY_TEMP reached)
 const int numReadings = 75 * 10; // number of values per Array
 float readingsTemp[numReadings]; // the readings from Temp
 float readingsTime[numReadings]; // the readings from time
-int readIndex = 0; // the index of the current reading
+int readIndex = 0;               // the index of the current reading
 unsigned long lastBrewTime = 0;
 int timerBrewDetection = 0;
 
 /********************************************************
  * PID Variables
  *****************************************************/
-const unsigned int windowSizeSeconds = 5; // How often should PID.compute() run? must be >= 1sec
+const unsigned int windowSizeSeconds = 5;           // How often should PID.compute() run? must be >= 1sec
 unsigned int windowSize = windowSizeSeconds * 1000; // 1000=100% heater power => resolution used in
                                                     // TSR() and PID.compute().
-volatile unsigned int isrCounter = 0; // counter for heater ISR
+volatile unsigned int isrCounter = 0;               // counter for heater ISR
 #ifdef ESP32
-hw_timer_t* timer = NULL;
+hw_timer_t *timer = NULL;
 #endif
 const float heaterOverextendingFactor = 1.2;
 unsigned int heaterOverextendingIsrCounter = windowSize * heaterOverextendingFactor;
 unsigned long pidComputeLastRunTime = 0;
 unsigned long streamComputeLastRunTime = 0;
 float Input = 0;
-double Output = 0;  // must be double: https://github.com/espressif/arduino-esp32/issues/3661
+double Output = 0; // must be double: https://github.com/espressif/arduino-esp32/issues/3661
 float secondlatestTemperature = 0;
 double previousOutput = 0;
 int pidMode = 1; // 1 = Automatic, 0 = Manual
 
+#if (PRESSURE_SENSOR_ENABLE)
+float currentPressure = 0;
+unsigned long pressureSampleTime = 0;
+#endif
+
 float setPoint1 = SETPOINT1;
 float setPoint2 = SETPOINT2;
 float setPoint3 = SETPOINT3;
-float* activeSetPoint = &setPoint1;
+float *activeSetPoint = &setPoint1;
 float starttemp1 = STARTTEMP1;
 float starttemp2 = STARTTEMP2;
 float starttemp3 = STARTTEMP3;
-float* activeStartTemp = &starttemp1;
+float *activeStartTemp = &starttemp1;
 float setPointSteam = SETPOINT_STEAM;
 float steamReadyTemp = STEAM_READY_TEMP;
 
@@ -194,7 +199,7 @@ const int lastBrewTimeOffset = 4 * 1000; // compensate for lag in software brew-
 // If the espresso hardware itself is cold, we need additional power for
 // steadyPower to hold the water temperature
 float steadyPowerOffset = STEADYPOWER_OFFSET; // heater power (in percent) which should be added to
-                                               // steadyPower during steadyPowerOffsetTime
+                                              // steadyPower during steadyPowerOffsetTime
 float steadyPowerOffsetModified = steadyPowerOffset;
 unsigned int steadyPowerOffsetTime = STEADYPOWER_OFFSET_TIME; // timeframe (in s) for which
                                                               // steadyPowerOffsetActivateTime should be active
@@ -204,7 +209,7 @@ unsigned long lastUpdateSteadyPowerOffset = 0; // last time steadyPowerOffset wa
 bool MaschineColdstartRunOnce = false;
 bool MachineColdOnStart = true;
 float starttempOffset = 0; // Increasing this lead to too high temp and emergency measures taking
-                            // place. For my rancilio it is best to leave this at 0.
+                           // place. For my rancilio it is best to leave this at 0.
 
 PIDBias bPID(&Input, &Output, &steadyPower, &steadyPowerOffsetModified, &steadyPowerOffsetActivateTime, &steadyPowerOffsetTime, &activeSetPoint, aggKp, aggKi, aggKd);
 
@@ -214,19 +219,19 @@ PIDBias bPID(&Input, &Output, &steadyPower, &steadyPowerOffsetModified, &steadyP
 float brewtime1 = BREWTIME1;
 float brewtime2 = BREWTIME2;
 float brewtime3 = BREWTIME3;
-float* activeBrewTime = &brewtime1;
+float *activeBrewTime = &brewtime1;
 float preinfusion1 = PREINFUSION1;
 float preinfusion2 = PREINFUSION2;
 float preinfusion3 = PREINFUSION3;
-float* activePreinfusion = &preinfusion1;
+float *activePreinfusion = &preinfusion1;
 float preinfusionpause1 = PREINFUSION_PAUSE1;
 float preinfusionpause2 = PREINFUSION_PAUSE2;
 float preinfusionpause3 = PREINFUSION_PAUSE3;
-float* activePreinfusionPause = &preinfusionpause1;
+float *activePreinfusionPause = &preinfusionpause1;
 unsigned int brewtimeEndDetection1 = BREWTIME_END_DETECTION1;
 unsigned int brewtimeEndDetection2 = BREWTIME_END_DETECTION2;
 unsigned int brewtimeEndDetection3 = BREWTIME_END_DETECTION3;
-unsigned int* activeBrewTimeEndDetection = &brewtimeEndDetection1;
+unsigned int *activeBrewTimeEndDetection = &brewtimeEndDetection1;
 int brewing = 0; // Attention: "brewing" must only be changed in brew()
                  // (ONLYPID=0) or brewingAction() (ONLYPID=1)!
 bool waitingForBrewSwitchOff = false;
@@ -266,17 +271,17 @@ unsigned long previousTimerSleepCheck = 0;
 bool sensorMalfunction = false;
 int error = 0;
 int errorFarOff = 0;
-const int maxErrorCounter = 10*10; // define maximum number of consecutive polls (of refreshTempInterval) to have errors
+const int maxErrorCounter = 10 * 10; // define maximum number of consecutive polls (of refreshTempInterval) to have errors
 
 /********************************************************
  * Rest
  *****************************************************/
-unsigned int profile = 1;  // profile should be set
-unsigned int activeProfile = profile;  // profile set
+unsigned int profile = 1;             // profile should be set
+unsigned int activeProfile = profile; // profile set
 
-bool emergencyStop = false; // protect system when temperature is too high or sensor defect
-int pidON = 1; // 1 = control loop in closed loop
-int pumpRelayON, pumpRelayOFF; // used for pump relay trigger type. Do not change!
+bool emergencyStop = false;      // protect system when temperature is too high or sensor defect
+int pidON = 1;                   // 1 = control loop in closed loop
+int pumpRelayON, pumpRelayOFF;   // used for pump relay trigger type. Do not change!
 int valveRelayON, valveRelayOFF; // used for valve relay trigger type. Do not change!
 char displayMessageLine1[21] = "\0";
 char displayMessageLine2[21] = "\0";
@@ -288,10 +293,10 @@ unsigned long previousTimerMqttHandle = 0;
 unsigned long previousTimerBlynkHandle = 0;
 unsigned long previousTimerDebugHandle = 0;
 unsigned long previousTimerPidCheck = 0;
-#if (TEMPSENSOR==3)
+#if (TEMPSENSOR == 3)
 const long refreshTempInterval = 200; // How often to read the temperature sensor (must be >=180ms)
 #else
-const long refreshTempInterval = 100; // How often to read the temperature sensor
+const long refreshTempInterval = 100;          // How often to read the temperature sensor
 #endif
 #ifdef EMERGENCY_TEMP
 const unsigned int emergencyTemperature = EMERGENCY_TEMP; // temperature at which the emergency shutdown should take
@@ -300,8 +305,8 @@ const unsigned int emergencyTemperature = EMERGENCY_TEMP; // temperature at whic
 const unsigned int emergencyTemperature = 120; // fallback
 #endif
 float brewDetectionSensitivity = BREWDETECTION_SENSITIVITY; // if temperature decreased within the last 6
-                                                             // seconds by this amount, then we detect a
-                                                             // brew.
+                                                            // seconds by this amount, then we detect a
+                                                            // brew.
 #ifdef BREW_READY_DETECTION
 const int enabledHardwareLed = ENABLE_HARDWARE_LED;
 const int enabledHardwareLedNumber = ENABLE_HARDWARE_LED_NUMBER;
@@ -312,16 +317,16 @@ float marginOfFluctuation = float(BREW_READY_DETECTION);
 CRGB leds[enabledHardwareLedNumber];
 #endif
 #else
-const int enabledHardwareLed = 0; // 0 = disable functionality
-float marginOfFluctuation = 0; // 0 = disable functionality
+const int enabledHardwareLed = 0;              // 0 = disable functionality
+float marginOfFluctuation = 0;                 // 0 = disable functionality
 #endif
-char* blynkReadyLedColor = (char*)"#000000";
+char *blynkReadyLedColor = (char *)"#000000";
 unsigned long lastCheckBrewReady = 0;
 unsigned long lastBrewReady = 0;
 unsigned long lastBrewEnd = 0; // used to determime the time it takes to reach brewReady==true
 unsigned long brewStatisticsTimer = 0;
-unsigned long brewStatisticsAdditionalWeightTime = 2000;  //how many ms after brew() ends to still measure weight
-unsigned int brewStatisticsAdditionalDisplayTime = 12000; //how many ms after brew() ends to show the brewStatistics
+unsigned long brewStatisticsAdditionalWeightTime = 2000;  // how many ms after brew() ends to still measure weight
+unsigned int brewStatisticsAdditionalDisplayTime = 12000; // how many ms after brew() ends to show the brewStatistics
 unsigned int powerOffTimer = 0;
 bool brewReady = false;
 unsigned long eepromSaveTimer = 28 * 60 * 1000UL; // save every 28min
@@ -332,9 +337,9 @@ unsigned long allServicesLastReconnectAttemptTime = 0;
 unsigned long allservicesMinReconnectInterval = 160000; // 160sec minimum wait-time between service reconnections
 bool forceOffline = FORCE_OFFLINE;
 unsigned long eepromForceSync = 0;
-const int eepromForceSyncWaitTimer = 3000; // after updating a setting wait this number of milliseconds before writing to eeprom
+const int eepromForceSyncWaitTimer = 3000;                             // after updating a setting wait this number of milliseconds before writing to eeprom
 const int heaterInactivityTimer = HEATER_INACTIVITY_TIMER * 60 * 1000; // disable heater if no activity within the last minutes
-int previousPowerOffTimer = 0; // in minutes
+int previousPowerOffTimer = 0;                                         // in minutes
 unsigned long loops = 0;
 unsigned long maxMicros = 0;
 unsigned long lastReportMicros = 0;
@@ -357,24 +362,24 @@ unsigned long previousTimerWaterLevelCheck = 0;
  * Temperature Sensor: TSIC 30x TEMP / Max6675
  ******************************************************/
 #if (TEMPSENSOR == 3)
-  #define TEMPSENSOR_NAME "MAX6675"
-  #include <max6675.h>
-  MAX6675 thermocouple(pinTemperatureCLK, pinTemperatureCS, pinTemperatureSO);
+#define TEMPSENSOR_NAME "MAX6675"
+#include <max6675.h>
+MAX6675 thermocouple(pinTemperatureCLK, pinTemperatureCS, pinTemperatureSO);
 #else // TSIC306 default sensor
-  #define TEMPSENSOR_NAME "TSIC306"
-  #include <ZACwire.h>
+#define TEMPSENSOR_NAME "TSIC306"
+#include <ZACwire.h>
 #if (!defined(ZACWIRE_VERSION) || (defined(ZACWIRE_VERSION) && ZACWIRE_VERSION < 200L))
 #error ERROR ZACwire library version must be >= 2.0.0
 #endif
-    #ifdef ESP32
+#ifdef ESP32
 ZACwire TSIC(pinTemperature, 306, true);
-    #else
+#else
 ZACwire TSIC(pinTemperature, 306, true);
-    #endif
-#endif    
+#endif
+#endif
 
 uint16_t temperature = 0;
-volatile uint16_t temp_value[2] = { 0 };
+volatile uint16_t temp_value[2] = {0};
 volatile byte tsicDataAvailable = 0;
 unsigned int isrCounterStripped = 0;
 const int isrCounterFrame = 1000;
@@ -386,9 +391,9 @@ const int isrCounterFrame = 1000;
 float scaleSensorWeightSetPoint1 = SCALE_SENSOR_WEIGHT_SETPOINT1;
 float scaleSensorWeightSetPoint2 = SCALE_SENSOR_WEIGHT_SETPOINT2;
 float scaleSensorWeightSetPoint3 = SCALE_SENSOR_WEIGHT_SETPOINT3;
-float* activeScaleSensorWeightSetPoint = &scaleSensorWeightSetPoint1;
-const int brewtimeMaxAdditionalTimeWhenWeightNotReached = 10; //in sec 
-float scaleSensorWeightOffset = 1.5;  //automatic determined weight (gram) of dipping after brew has mechanically stopped
+float *activeScaleSensorWeightSetPoint = &scaleSensorWeightSetPoint1;
+const int brewtimeMaxAdditionalTimeWhenWeightNotReached = 10; // in sec
+float scaleSensorWeightOffset = 1.5;                          // automatic determined weight (gram) of dipping after brew has mechanically stopped
 float scaleSensorWeightOffsetFactor = 0.3;
 float scaleSensorWeightOffsetMax = 3;
 float scaleSensorWeightOffsetMin = 0.05;
@@ -400,7 +405,7 @@ unsigned long scaleSensorCheckTimer = 2000;
  * CONTROLS
  ******************************************************/
 #include "controls.h"
-controlMap* controlsConfig = NULL;
+controlMap *controlsConfig = NULL;
 unsigned long lastCheckGpio = 0;
 
 /********************************************************
@@ -410,7 +415,7 @@ unsigned int menuPosition = 0;
 float menuValue = 0;
 unsigned long previousTimerMenuCheck = 0;
 const unsigned int menuOffTimer = 7000;
-menuMap* menuConfig = NULL;
+menuMap menuConfig = NULL;
 
 /******************************************************
  * WiFi helper scripts
@@ -1651,6 +1656,19 @@ network-issues with your other WiFi-devices on your WiFi-network. */
   }
 #endif
 
+#if (PRESSURE_SENSOR_ENABLE)
+void updatePressure() {
+  if (millis() - pressureSampleTime <= 200)
+    return;
+  pressureSampleTime = millis();
+  DEBUG_println("Updating pressure");
+  uint16_t current_adc = analogRead(PRESSURE_SENSOR_PIN);
+  float current_vol = (3.3 * current_adc) / 4095.0 + PRESSURE_ADC_ZERO_OFFSET;
+  currentPressure = current_vol * PRESSURE_ADC_MAX_VAL_REAL_PRESSURE_BAR / PRESSURE_ADC_MAX_VAL;
+  DEBUG_print("Current pressure: ADC=%d, V=%f, P=%f\n", current_adc, current_vol, currentPressure);
+}
+#endif
+
   /***********************************
    * LOOP()
    ***********************************/
@@ -1770,6 +1788,9 @@ network-issues with your other WiFi-devices on your WiFi-network. */
                 powerOffTimer = ENABLE_POWER_OFF_COUNTDOWN - ((millis() - lastBrewEnd) / 1000);
                 mqttPublish((char*)"powerOffTimer", int2string(powerOffTimer >= 0 ? ((powerOffTimer + 59) / 60) : 0)); // in minutes always rounded up
               }
+              if (PRESSURE_SENSOR_ENABLE != 0) {
+                  mqttPublish((char*)"pressure", bool2string(currentPressure));
+              }
               // mqttPublishSettings();  //not needed because we update live on occurence
             }
           }
@@ -1784,6 +1805,10 @@ network-issues with your other WiFi-devices on your WiFi-network. */
 
 #if (SCALE_SENSOR_ENABLE)
     updateWeight(); // get new weight values
+#endif
+
+#if (PRESSURE_SENSOR_ENABLE)
+    updatePressure();
 #endif
 
 #if (1 == 0)
