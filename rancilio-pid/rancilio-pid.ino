@@ -415,7 +415,7 @@ unsigned int menuPosition = 0;
 float menuValue = 0;
 unsigned long previousTimerMenuCheck = 0;
 const unsigned int menuOffTimer = 7000;
-menuMap menuConfig = NULL;
+menuMap* menuConfig = NULL;
 
 /******************************************************
  * WiFi helper scripts
