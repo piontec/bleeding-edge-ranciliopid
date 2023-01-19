@@ -127,6 +127,9 @@ void updateWeight() {
 ******************************************************/
 void IRAM_ATTR dataReadyISR(void *arg) {
   LoadCell.dataWaitingAsync();
+#if (SCALE_SENSOR_2_ENABLE)
+  LoadCell2.dataWaitingAsync();
+#endif
 }
 
 static void attachISR_ESP32_SCALE(void *arg){					//attach ISR in freeRTOS because arduino can't attachInterrupt() inside of template class
